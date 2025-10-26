@@ -1,0 +1,14 @@
+CRITICAL - 2025-03-09 19:30:35 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "chat_view.php"
+[Method: GET, Route: chat]
+in SYSTEMPATH\Exceptions\FrameworkException.php on line 41.
+ 1 SYSTEMPATH\View\View.php(222): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('chat_view.php')
+ 2 SYSTEMPATH\Common.php(1171): CodeIgniter\View\View->render('chat_view', [], true)
+ 3 APPPATH\Controllers\ChatController.php(12): view('chat_view')
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\ChatController->index()
+ 5 SYSTEMPATH\CodeIgniter.php(509): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ChatController))
+ 6 SYSTEMPATH\CodeIgniter.php(355): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(325): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(56): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+
+

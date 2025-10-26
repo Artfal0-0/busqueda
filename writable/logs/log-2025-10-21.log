@@ -1,0 +1,24 @@
+ERROR - 2025-10-21 01:39:23 --> Respuesta inválida: Array
+(
+    [type] => error
+    [error] => Array
+        (
+            [type] => not_found_error
+            [message] => model: claude-3-sonnet-20240229
+        )
+
+    [request_id] => req_011CUKVPhJ4A4rkbtvALvp9h
+)
+
+CRITICAL - 2025-10-21 01:40:25 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "pages/CentroAyuda.php"
+[Method: GET, Route: CentroAyuda]
+in SYSTEMPATH\Exceptions\FrameworkException.php on line 41.
+ 1 SYSTEMPATH\View\View.php(222): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('pages/CentroAyuda.php')
+ 2 SYSTEMPATH\Common.php(1171): CodeIgniter\View\View->render('pages/CentroAyuda', [], true)
+ 3 APPPATH\Controllers\SegurosController.php(35): view('pages/CentroAyuda')
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\SegurosController->CentroAyuda()
+ 5 SYSTEMPATH\CodeIgniter.php(509): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\SegurosController))
+ 6 SYSTEMPATH\CodeIgniter.php(355): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(325): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(67): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(56): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
