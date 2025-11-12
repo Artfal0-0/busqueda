@@ -1,10 +1,15 @@
 <?php
+
 namespace App\Controllers;
 
 use CodeIgniter\Controller;
 
 class Search extends Controller
 {
+    public function principal()
+    {
+        return view('layouts/index');
+    }
     public function index()
     {
         return view('search/index');
@@ -25,4 +30,3 @@ class Search extends Controller
         return view('search/sources');
     }
 }
-?>
