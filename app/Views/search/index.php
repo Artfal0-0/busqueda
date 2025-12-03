@@ -1,27 +1,27 @@
 <?php $this->extend('layouts/main_layout');
 $this->section('content'); ?>
 
-<div class="container py-5 min-vh-100">
-    <div class="row justify-content-center">
-        <div class="col-lg-9 text-center">
-            <br>
-            <h1 class="display-4 fw-bold text-white mb-3 ">Sistema RAG Multiagente</h1>
-            <p class="lead text-white-50 mb-5">Busqueda con n8n</p>
+<div class="container min-vh-100 d-flex flex-column justify-content-center">
+    <div class="row justify-content-center align-items-center h-100">
+        <div class="col-lg-10 text-center">
+            
+            <h1 class="display-4 fw-bold text-white mb-3">Sistema RAG Multiagente</h1>
+            <p class="lead text-white-50 mb-5">Búsqueda inteligente con n8n</p>
 
             <form id="searchForm" class="mb-5">
-                <div class="input-group input-group-lg shadow-lg" style="max-width: 700px; margin: 0 auto;">
-                    <input type="text" id="query" class="form-control form-control-lg "
+                <div class="input-group input-group-lg shadow-lg" style="max-width: 800px; margin: 0 auto;">
+                    <input type="text" id="query" class="form-control form-control-lg"
                         placeholder="Pregúntame cualquier cosa..." required
-                        style="border-radius: 50px 0 0 50px; background:#ffff; border:0; color:black;">
-                    <button class=" btn-lg px-5" type="submit" id="btnBuscar"
-                        style="border-radius: 0 50px 50px 0; background:#94AEE3; color:white; border:0;">
+                        style="border-radius: 50px 0 0 50px; background:#ffffff; border:0; color:black; padding-left: 30px;">
+                    <button class="btn btn-lg px-5" type="submit" id="btnBuscar"
+                        style="border-radius: 0 50px 50px 0; background:#94AEE3; color:white; border:0; font-weight: bold;">
                         <span id="loading" class="spinner-border spinner-border-sm d-none me-2"></span>
                         Buscar
                     </button>
                 </div>
             </form>
 
-            <div id="resultado" class="mt-5"></div>
+            <div id="statusMessage" class="mt-4"></div>
 
         </div>
     </div>
@@ -35,60 +35,48 @@ $this->section('content'); ?>
 
         const loading = document.getElementById('loading');
         const btn = document.getElementById('btnBuscar');
-        const resultado = document.getElementById('resultado');
+        const statusMessage = document.getElementById('statusMessage');
 
         loading.classList.remove('d-none');
         btn.disabled = true;
-        resultado.innerHTML = `<div class="text-info fs-5"><em>Consultando a agente especializado...</em></div>`;
+        statusMessage.innerHTML = `<div class="text-info fs-4"><em><span class="spinner-grow spinner-grow-sm"></span> Consultando a los agentes...</em></div>`;
 
         try {
-            // URL DEL WEBHOOK 
-            const url = 'http://127.0.0.1:5678/webhook/rag-consulta';
+            // URL DEL WEBHOOK DE N8N
+            const url = 'https://n8n-production-4fd2.up.railway.app/webhook/rag-consulta';
 
             const res = await fetch(url, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    query
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query })
             });
 
             if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
 
             const data = await res.json();
 
-
-            // respuesta del agente
-            let respuestaTexto = "";
-            let preguntaOriginal = "";
-
+            // --- LÓGICA DE DATOS (Array vs Objeto) ---
+            let dataFinal = { respuesta: "", pregunta: query };
+            
             if (Array.isArray(data) && data.length > 0) {
-                respuestaTexto = data[0].respuesta;
-                preguntaOriginal = data[0].pregunta;
+                dataFinal.respuesta = data[0].respuesta;
+                dataFinal.pregunta = data[0].pregunta || query;
             } else if (data && data.respuesta) {
-                respuestaTexto = data.respuesta;
-                preguntaOriginal = data.pregunta;
+                dataFinal.respuesta = data.respuesta;
+                dataFinal.pregunta = data.pregunta || query;
             }
 
-            if (!respuestaTexto) {
-                throw new Error("no se recibió una respuesta válida del sistema.");
-            }
+            if (!dataFinal.respuesta) throw new Error("Respuesta vacía del sistema.");
 
-            resultado.innerHTML = `
-                <div class="card" style="background-color: #2c2c2c; border:none; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-                    <div class="card-header text-start" style="background-color: #1e1e1e; border-bottom: 1px solid #444;">
-                    </div>
-                <div class="card-body text-start">
-                    <div class="text-white lead">${marked.parse(respuestaTexto)}</div>
-                `;
+            // 1. GUARDAR EN MEMORIA DEL NAVEGADOR
+            sessionStorage.setItem('ragData', JSON.stringify(dataFinal));
+
+            // 2. REDIRIGIR A LA VISTA DE RESPUESTAS
+            window.location.href = 'responses'; 
+
         } catch (err) {
-            console.error("ERROR CRÍTICO:", err);
-            resultado.innerHTML = `<div class="alert alert-danger">
-                <strong>Ocurrió un error:</strong> ${err.message}<br>
-            </div>`;
-        } finally {
+            console.error(err);
+            statusMessage.innerHTML = `<div class="alert alert-danger w-50 mx-auto">Error: ${err.message}</div>`;
             loading.classList.add('d-none');
             btn.disabled = false;
         }
