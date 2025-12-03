@@ -27,3 +27,6 @@ $routes->get('/n8n/conectar-apis', 'Search::conectar_apis');
 $routes->get('/n8n/validar-credenciales', 'Search::validar_credenciales_api');
 $routes->get('/n8n/conectar-puerto', 'Search::conectar_puerto');
 $routes->get('/n8n/obtener-url-servidor', 'Search::obtener_url_servidor');
+
+// PROCESAR CONSULTA en n8n
+$routes->get('/search/get-respuesta/(:segment)', 'Search::get_respuesta/$1');

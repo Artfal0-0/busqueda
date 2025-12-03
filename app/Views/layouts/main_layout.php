@@ -8,6 +8,7 @@ $this->section('content');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Búsqueda Multiagente</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="public/assets/css/style.css" rel="stylesheet">
 </head>
@@ -26,10 +27,10 @@ $this->section('content');
                             <a class="nav-link" href="search">Consulta</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="history">Historial</a>
+                            <a class="nav-link" href="responses">Respuestas</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="responses">Respuestas</a>
+                            <a class="nav-link" href="history">Historial</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="sources">Fuentes</a>

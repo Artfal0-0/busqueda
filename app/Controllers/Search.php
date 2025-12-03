@@ -6,137 +6,108 @@ use CodeIgniter\Controller;
 
 class Search extends Controller
 {
-
-    // VISTAS DEL SISTEMA RAG
-
+    public function index()
+    {
+        return view('search/index');
+    }
+    public function history()
+    {
+        return view('search/history');
+    }
+    public function responses()
+    {
+        return view('search/responses');
+    }
+    public function sources()
+    {
+        return view('search/sources');
+    }
     public function principal()
     {
         return view('layouts/index');
     }
 
-    public function index()
-    {
-        return view('search/index');
-    }
-
-    public function history()
-    {
-        return view('search/history');
-    }
-
-    public function responses()
-    {
-        return view('search/responses');
-    }
-
-    public function sources()
-    {
-        return view('search/sources');
-    }
-
-    // FUNDAMENTOS DE IA
-    public function crear_id_fundamento()
-    {
-        // Simulación de creación de ID
-        $id = uniqid('fund_', true);
-        return $this->response->setJSON(['id_fundamento' => $id]);
-    }
-
+    // =============================================
+    // 1-6. MÓDULOS DEL CURSO RAG MULTIAGENTE
+    // =============================================
     public function iniciar_sistema()
     {
-        // Datos simulados del sistema
-        $sistema = [
-            'nombre' => 'RAG Multiagente',
-            'estado' => 'inicializando',
-            'hora_inicio' => date('Y-m-d H:i:s')
-        ];
-        return $this->response->setJSON(['sistema' => $sistema]);
+        return $this->response->setJSON(['status' => 'RAG Multiagente iniciado', 'fecha' => date('Y-m-d H:i:s')]);
     }
-
     public function definir_modelo()
     {
-        // Simulación de selección de modelo
-        $modelo = [
-            'nombre' => 'GPT-5-MultiAgent',
-            'tipo' => 'Generativo + Recuperativo',
-            'entrenado_en' => 'Knowledge Base RAG',
-        ];
-        return $this->response->setJSON(['modelo_definido' => $modelo]);
+        return $this->response->setJSON(['modelo' => 'Gemini 1.5 Flash + RAG', 'estado' => 'activado']);
     }
-
     public function verificar_estado_inicial()
     {
-        // Estado inicial simulado
-        $estado = [
-            'memoria' => 'OK',
-            'conexion_n8n' => 'OK',
-            'modelos_cargados' => true,
-        ];
-        return $this->response->setJSON(['estado_inicial' => $estado]);
-    }
-
-    public function validar_version()
-    {
-        // Simulación de validación de versión
-        $version = [
-            'sistema' => 'v1.0.0-beta',
-            'modelo_ia' => '5.0.2',
-            'compatible' => true
-        ];
-        return $this->response->setJSON(['version' => $version]);
-    }
-
-    // CONFIGURACIÓN DEL ENTORNO n8n
-
-    public function crear_id_config()
-    {
-        $id = uniqid('conf_', true);
-        return $this->response->setJSON(['id_config' => $id]);
+        return $this->response->setJSON(['todo' => 'OK', 'n8n' => 'conectado', 'gemini' => 'listo']);
     }
 
     public function configurar_entorno_n8n()
     {
-        $config = [
-            'entorno_n8n' => 'Producción',
-            'estado' => 'Configurado correctamente',
-            'fecha' => date('Y-m-d H:i:s'),
-        ];
-        return $this->response->setJSON(['configuracion' => $config]);
+        return $this->response->setJSON(['n8n' => 'http://localhost:5678', 'estado' => 'corriendo']);
     }
-
-    public function conectar_apis()
-    {
-        $apis = [
-            ['nombre' => 'OpenAI API', 'estado' => 'Conectada'],
-            ['nombre' => 'VectorDB API', 'estado' => 'Conectada'],
-        ];
-        return $this->response->setJSON(['apis' => $apis]);
-    }
-
     public function validar_credenciales_api()
     {
-        $credenciales = [
-            'api_key_openai' => 'válida',
-            'api_key_vectordb' => 'válida',
-        ];
-        return $this->response->setJSON(['credenciales' => $credenciales]);
+        return $this->response->setJSON(['gemini' => 'válida', 'base_datos' => 'conectada']);
     }
 
-    public function conectar_puerto()
+    public function process()
     {
-        $puerto = [
-            'numero' => 5678,
-            'estado' => 'Activo',
-        ];
-        return $this->response->setJSON(['puerto' => $puerto]);
+        // aqui no se hace nada porque todo lo hace n8n directamente
+        return $this->response->setJSON(['status' => 'ok']);
     }
 
-    public function obtener_url_servidor()
-    {
-        $servidor = [
-            'url_servidor' => 'http://localhost:5678/n8n',
-            'status' => 'Disponible',
-        ];
-        return $this->response->setJSON(['servidor' => $servidor]);
-    }
+    // // Procesar consulta (llama a n8n)
+    // public function process()
+    // {
+    //     $query = $this->request->getPost('query');
+    //     if (!$query) return $this->response->setJSON(['error' => 'Sin consulta'], 400);
+
+    //     $sessionId = uniqid('sess_', true);
+
+    //     $client = \Config\Services::curlrequest();
+    //     $client->post('http://localhost:5678/webhook/rag-consulta', [
+    //         'json' => ['query' => $query, 'session_id' => $sessionId],
+    //         'timeout' => 30
+    //     ]);
+
+    //     return $this->response->setJSON([
+    //         'status' => 'procesado',
+    //         'session_id' => $sessionId,
+    //         'mensaje' => 'Enviado a n8n + Gemini'
+    //     ]);
+    // }
+
+    // // n8n llama aquí cuando termine
+    // public function webhook_respuesta()
+    // {
+    //     $data = $this->request->getJSON(true);
+
+    //     if (empty($data['session_id']) || empty($data['query'])) {
+    //         return $this->response->setStatusCode(400)->setJSON(['error' => 'Faltan datos']);
+    //     }
+
+    //     // USAMOS EL MODEL AHORA
+    //     $model = new \App\Models\SesionRagModel();
+    //     $model->guardarDesdeN8n($data);
+
+    //     return $this->response->setJSON(['guardado' => 'ok', 'session_id' => $data['session_id']]);
+    // }
+
+
+    // public function get_respuesta($sessionId)
+    // {
+    //     $model = new \App\Models\SesionRagModel();
+    //     $sesion = $model->obtenerPorSessionId($sessionId);
+
+    //     if ($sesion) {
+    //         return $this->response->setJSON([
+    //             'respuesta' => $sesion['respuesta'] ?: 'Aún procesando...',
+    //             'pregunta'  => $sesion['pregunta']
+    //         ]);
+    //     }
+
+    //     return $this->response->setJSON(['respuesta' => 'No encontrada aún. Espera un poco.'], 404);
+    // }
 }
