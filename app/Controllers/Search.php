@@ -27,35 +27,97 @@ class Search extends Controller
         return view('layouts/index');
     }
 
+
     // =============================================
-    // 1-6. MÓDULOS DEL CURSO RAG MULTIAGENTE
+    // BLOQUE 1: FUNDAMENTOS DE IA Y AUTOMATIZACIÓN
+    // (Según diagrama AURIA)
     // =============================================
-    public function iniciar_sistema()
+
+    public function Crear_id_fundamento()
     {
-        return $this->response->setJSON(['status' => 'RAG Multiagente iniciado', 'fecha' => date('Y-m-d H:i:s')]);
-    }
-    public function definir_modelo()
-    {
-        return $this->response->setJSON(['modelo' => 'Gemini 1.5 Flash + RAG', 'estado' => 'activado']);
-    }
-    public function verificar_estado_inicial()
-    {
-        return $this->response->setJSON(['todo' => 'OK', 'n8n' => 'conectado', 'gemini' => 'listo']);
+        // Simula la creación de un ID para el módulo de fundamentos
+        return $this->response->setJSON(['id_fundamento' => uniqid('fund_'), 'status' => 'creado']);
     }
 
-    public function configurar_entorno_n8n()
+    public function Iniciar_sistema()
     {
-        return $this->response->setJSON(['n8n' => 'http://localhost:5678', 'estado' => 'corriendo']);
-    }
-    public function validar_credenciales_api()
-    {
-        return $this->response->setJSON(['gemini' => 'válida', 'base_datos' => 'conectada']);
+        return $this->response->setJSON(['status' => 'Sistema RAG Multiagente iniciado', 'timestamp' => date('Y-m-d H:i:s')]);
     }
 
+    public function Definir_modelo()
+    {
+        return $this->response->setJSON(['modelo' => 'Llama 3.3 Versatile (via Groq)', 'tipo' => 'LLM']);
+    }
+
+    public function Verificar_estado_inicial()
+    {
+        return $this->response->setJSON(['sistema' => 'online', 'memoria' => 'ok', 'conexiones' => 0]);
+    }
+
+    public function Validar_version()
+    {
+        return $this->response->setJSON(['version' => '1.0.0', 'compatible' => true]);
+    }
+
+    // =============================================
+    // BLOQUE 2 y 3: CONFIGURACIÓN DEL ENTORNO N8N
+    // (Según diagrama AURIA)
+    // =============================================
+
+    public function Crear_id_config()
+    {
+        // Este método aparece varias veces en el diagrama, genera un ID de configuración
+        return $this->response->setJSON(['id_config' => uniqid('conf_'), 'step' => 'configuracion_iniciada']);
+    }
+
+    public function Configurar_entorno_n8n()
+    {
+        return $this->response->setJSON(['env' => 'production', 'platform' => 'Railway', 'status' => 'configurado']);
+    }
+
+    public function Conectar_apis()
+    {
+        // Simula la conexión con Groq y Google
+        return $this->response->setJSON(['groq_api' => 'conectada', 'search_api' => 'conectada']);
+    }
+
+    public function Validar_credenciales_api()
+    {
+        return $this->response->setJSON(['auth' => 'success', 'permissions' => 'read/write']);
+    }
+
+    public function Conectar_puerto()
+    {
+        // En Railway el puerto es dinámico, pero simulamos el estándar
+        return $this->response->setJSON(['port' => getenv('PORT') ?: 8080, 'status' => 'listening']);
+    }
+
+    public function Obtener_url_servidor()
+    {
+        return $this->response->setJSON(['url' => base_url(), 'type' => 'https']);
+    }
+
+    public function Configurar_nodos()
+    {
+        return $this->response->setJSON([
+            'nodos' => [
+                'Webhook',
+                'Agente Tecnico',
+                'Agente Simple',
+                'Agente Sintetizador'
+            ],
+            'status' => 'workflow_ready'
+        ]);
+    }
+
+    // =============================================
+    // LOGICA DE PROCESAMIENTO (EXISTENTE)
+    // =============================================
+    
     public function process()
     {
-        // aqui no se hace nada porque todo lo hace n8n directamente
-        return $this->response->setJSON(['status' => 'ok']);
+        // Método auxiliar para evitar errores si el frontend llama a process
+        return $this->response->setJSON(['status' => 'ok', 'info' => 'El procesamiento real ocurre via n8n']);
     }
 
     // // Procesar consulta (llama a n8n)
