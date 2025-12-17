@@ -116,7 +116,7 @@ class Search extends Controller
 
     public function process()
     {
-        // 1. Obtener la pregunta del usuario desde el formulario
+        // 1. Obtener la pregunta
         $query = $this->request->getPost('query');
 
         if (!$query) {
@@ -127,90 +127,48 @@ class Search extends Controller
             ]);
         }
 
-        // 2. Definir la URL de tu Webhook en Railway
-        // (Esta es la URL que sale en tu nodo Webhook de N8N)
         $n8nUrl = 'https://n8n-production-4fd2.up.railway.app/webhook/rag-consulta';
 
         try {
-            // 3. Iniciar cliente HTTP para llamar a N8N
+            // 2. Conectar a N8N
             $client = \Config\Services::curlrequest();
-
             $response = $client->post($n8nUrl, [
                 'json' => ['query' => $query],
-                'headers' => [
-                    'Content-Type' => 'application/json'
-                ],
-                'http_errors' => false, // Para manejar errores manualmente
-                'timeout' => 60 // Dar tiempo a Groq para pensar (1 minuto)
+                'headers' => ['Content-Type' => 'application/json'],
+                'http_errors' => false,
+                'timeout' => 60
             ]);
 
-            // 4. Obtener la respuesta de N8N (JSON con respuesta, pregunta e imagenes)
+            // 3. Obtener el cuerpo crudo
             $body = $response->getBody();
 
-            // 5. Devolver eso directamente al JavaScript del navegador
-            return $this->response
-                ->setContentType('application/json')
-                ->setBody($body);
+            // 4. DECODIFICAR: Convertimos el texto de N8N a un Array PHP
+            // Esto sirve para verificar si N8N nos mandó basura o un JSON real
+            $data = json_decode($body, true);
+
+            // Si la decodificación falló (es null), hubo un error en N8N
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                // Forzamos un error visible para depurar
+                return $this->response->setJSON([
+                    'respuesta' => 'Error: N8N devolvió datos no válidos. ' . substr($body, 0, 100),
+                    'pregunta' => $query,
+                    'imagenes' => []
+                ]);
+            }
+
+            // 5. ASEGURAR IMÁGENES: Si por alguna razón 'imagenes' no viene, ponemos un array vacío
+            if (!isset($data['imagenes'])) {
+                $data['imagenes'] = [];
+            }
+
+            // 6. ENVIAR: Usamos setJSON para que CodeIgniter ponga las cabeceras correctas automáticamente
+            return $this->response->setJSON($data);
         } catch (\Exception $e) {
-            // Si algo falla, devolver error controlado
             return $this->response->setJSON([
-                'respuesta' => 'Ocurrió un error al conectar con el Agente IA: ' . $e->getMessage(),
+                'respuesta' => 'Error de conexión: ' . $e->getMessage(),
                 'pregunta' => $query,
                 'imagenes' => []
             ]);
         }
     }
-
-    // // Procesar consulta (llama a n8n)
-    // public function process()
-    // {
-    //     $query = $this->request->getPost('query');
-    //     if (!$query) return $this->response->setJSON(['error' => 'Sin consulta'], 400);
-
-    //     $sessionId = uniqid('sess_', true);
-
-    //     $client = \Config\Services::curlrequest();
-    //     $client->post('http://localhost:5678/webhook/rag-consulta', [
-    //         'json' => ['query' => $query, 'session_id' => $sessionId],
-    //         'timeout' => 30
-    //     ]);
-
-    //     return $this->response->setJSON([
-    //         'status' => 'procesado',
-    //         'session_id' => $sessionId,
-    //         'mensaje' => 'Enviado a n8n + Gemini'
-    //     ]);
-    // }
-
-    // // n8n llama aquí cuando termine
-    // public function webhook_respuesta()
-    // {
-    //     $data = $this->request->getJSON(true);
-
-    //     if (empty($data['session_id']) || empty($data['query'])) {
-    //         return $this->response->setStatusCode(400)->setJSON(['error' => 'Faltan datos']);
-    //     }
-
-    //     // USAMOS EL MODEL AHORA
-    //     $model = new \App\Models\SesionRagModel();
-    //     $model->guardarDesdeN8n($data);
-
-    //     return $this->response->setJSON(['guardado' => 'ok', 'session_id' => $data['session_id']]);
-    // }
-
-
-    // public function get_respuesta($sessionId)
-    // {
-    //     $model = new \App\Models\SesionRagModel();
-    //     $sesion = $model->obtenerPorSessionId($sessionId);
-
-    //     if ($sesion) {
-    //         return $this->response->setJSON([
-    //             'respuesta' => $sesion['respuesta'] ?: 'Aún procesando...',
-    //             'pregunta'  => $sesion['pregunta']
-    //         ]);
-    //     }
-
-    //     return $this->response->setJSON(['respuesta' => 'No encontrada aún. Espera un poco.'], 404);
-    // }
 }
