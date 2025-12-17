@@ -6,16 +6,16 @@ $this->section('content'); ?>
         <div class="col-lg-10 text-center">
             
             <h1 class="display-4 fw-bold text-white mb-3">Sistema RAG Multiagente</h1>
-            <p class="lead text-white-50 mb-5">Búsqueda inteligente con n8n</p>
+            <p class="lead text-white-50 mb-5">Búsqueda inteligente con n8n + Imágenes</p>
 
             <form id="searchForm" class="mb-5">
                 <div class="input-group input-group-lg shadow-lg" style="max-width: 800px; margin: 0 auto;">
-                    <input type="text" id="query" class="form-control form-control-lg"
+                    <input type="text" id="queryInput" name="query" class="form-control form-control-lg"
                         placeholder="Pregúntame cualquier cosa..." required
                         style="border-radius: 50px 0 0 50px; background:#ffffff; border:0; color:black; padding-left: 30px;">
                     <button class="btn btn-lg px-5" type="submit" id="btnBuscar"
                         style="border-radius: 0 50px 50px 0; background:#94AEE3; color:white; border:0; font-weight: bold;">
-                        <span id="loading" class="spinner-border spinner-border-sm d-none me-2"></span>
+                        <span id="loadingSpinner" class="spinner-border spinner-border-sm d-none me-2"></span>
                         Buscar
                     </button>
                 </div>
@@ -28,58 +28,59 @@ $this->section('content'); ?>
 </div>
 
 <script>
-    document.getElementById('searchForm').addEventListener('submit', async function(e) {
+    document.getElementById('searchForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        const query = document.getElementById('query').value.trim();
+
+        // 1. Obtener datos
+        const query = document.getElementById('queryInput').value.trim();
+        const btn = document.getElementById('btnBuscar');
+        const spinner = document.getElementById('loadingSpinner');
+        const statusMsg = document.getElementById('statusMessage');
+
         if (!query) return;
 
-        const loading = document.getElementById('loading');
-        const btn = document.getElementById('btnBuscar');
-        const statusMessage = document.getElementById('statusMessage');
-
-        loading.classList.remove('d-none');
+        // 2. Activar estado de carga visual
         btn.disabled = true;
-        statusMessage.innerHTML = `<div class="text-info fs-4"><em><span class="spinner-grow spinner-grow-sm"></span> Consultando a los agentes...</em></div>`;
+        spinner.classList.remove('d-none');
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Consultando Agentes...';
+        statusMsg.innerHTML = '<div class="text-info">Conectando con Groq y buscando imágenes...</div>';
 
-        try {
-            // URL DEL WEBHOOK DE N8N
-            const url = 'https://n8n-production-4fd2.up.railway.app/webhook/rag-consulta';
+        // 3. Preparar datos para el Controlador PHP
+        const formData = new FormData();
+        formData.append('query', query);
 
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query })
-            });
+        // 4. Enviar petición al Controlador (NO a N8N directo)
+        fetch('search/process', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Respuesta recibida:", data); // Para depurar en consola
 
-            if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
-
-            const data = await res.json();
-
-            // --- LÓGICA DE DATOS (Array vs Objeto) ---
-            let dataFinal = { respuesta: "", pregunta: query };
-            
-            if (Array.isArray(data) && data.length > 0) {
-                dataFinal.respuesta = data[0].respuesta;
-                dataFinal.pregunta = data[0].pregunta || query;
-            } else if (data && data.respuesta) {
-                dataFinal.respuesta = data.respuesta;
-                dataFinal.pregunta = data.pregunta || query;
+            if (data.error) {
+                throw new Error(data.respuesta || "Error desconocido");
             }
 
-            if (!dataFinal.respuesta) throw new Error("Respuesta vacía del sistema.");
+            // 5. GUARDAR TODO EN MEMORIA (Texto + Imágenes)
+            // Aquí 'data' ya contiene: { respuesta: "...", pregunta: "...", imagenes: [...] }
+            sessionStorage.setItem('ragData', JSON.stringify(data));
 
-            // 1. GUARDAR EN MEMORIA DEL NAVEGADOR
-            sessionStorage.setItem('ragData', JSON.stringify(dataFinal));
-
-            // 2. REDIRIGIR A LA VISTA DE RESPUESTAS
-            window.location.href = 'responses'; 
-
-        } catch (err) {
-            console.error(err);
-            statusMessage.innerHTML = `<div class="alert alert-danger w-50 mx-auto">Error: ${err.message}</div>`;
-            loading.classList.add('d-none');
+            // 6. Redirigir a la vista de resultados
+            window.location.href = 'search/responses';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            statusMsg.innerHTML = `<div class="alert alert-danger w-50 mx-auto">Error: ${error.message}</div>`;
+            
+            // Restaurar botón
             btn.disabled = false;
-        }
+            spinner.classList.add('d-none');
+            btn.innerHTML = 'Buscar';
+        });
     });
 </script>
 
