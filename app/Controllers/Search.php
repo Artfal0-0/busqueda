@@ -113,11 +113,52 @@ class Search extends Controller
     // =============================================
     // LOGICA DE PROCESAMIENTO (EXISTENTE)
     // =============================================
-    
+
     public function process()
     {
-        // Método auxiliar para evitar errores si el frontend llama a process
-        return $this->response->setJSON(['status' => 'ok', 'info' => 'El procesamiento real ocurre via n8n']);
+        // 1. Obtener la pregunta del usuario desde el formulario
+        $query = $this->request->getPost('query');
+
+        if (!$query) {
+            return $this->response->setJSON([
+                'respuesta' => 'Por favor escribe una pregunta.',
+                'pregunta' => '',
+                'imagenes' => []
+            ]);
+        }
+
+        // 2. Definir la URL de tu Webhook en Railway
+        // (Esta es la URL que sale en tu nodo Webhook de N8N)
+        $n8nUrl = 'https://n8n-production-4fd2.up.railway.app/webhook/rag-consulta';
+
+        try {
+            // 3. Iniciar cliente HTTP para llamar a N8N
+            $client = \Config\Services::curlrequest();
+
+            $response = $client->post($n8nUrl, [
+                'json' => ['query' => $query],
+                'headers' => [
+                    'Content-Type' => 'application/json'
+                ],
+                'http_errors' => false, // Para manejar errores manualmente
+                'timeout' => 60 // Dar tiempo a Groq para pensar (1 minuto)
+            ]);
+
+            // 4. Obtener la respuesta de N8N (JSON con respuesta, pregunta e imagenes)
+            $body = $response->getBody();
+
+            // 5. Devolver eso directamente al JavaScript del navegador
+            return $this->response
+                ->setContentType('application/json')
+                ->setBody($body);
+        } catch (\Exception $e) {
+            // Si algo falla, devolver error controlado
+            return $this->response->setJSON([
+                'respuesta' => 'Ocurrió un error al conectar con el Agente IA: ' . $e->getMessage(),
+                'pregunta' => $query,
+                'imagenes' => []
+            ]);
+        }
     }
 
     // // Procesar consulta (llama a n8n)
