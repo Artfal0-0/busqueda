@@ -43,39 +43,44 @@ $this->section('content'); ?>
         btn.disabled = true;
         spinner.classList.remove('d-none');
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Consultando Agentes...';
-        statusMsg.innerHTML = '<div class="text-info">Buscando imágenes...</div>';
+        statusMsg.innerHTML = '<div class="text-info">Conectando con Groq y buscando imágenes...</div>';
 
-        // 3. Preparar datos para el Controlador PHP
+        // 3. Preparar datos
         const formData = new FormData();
         formData.append('query', query);
 
-        // 4. Enviar petición al Controlador (NO a N8N directo)
-        fetch('search/process', {
+        // 4. Enviar petición (USANDO RUTA ABSOLUTA GENERADA POR PHP)
+        // Fíjate en el cambio aquí: <?= base_url(...) ?>
+        fetch('<?= base_url("search/process") ?>', {
             method: 'POST',
             body: formData,
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Error en la red o servidor: " + response.status);
+            }
+            return response.json();
+        })
         .then(data => {
-            console.log("Respuesta recibida:", data); // Para depurar en consola
+            console.log("Respuesta recibida:", data);
 
             if (data.error) {
                 throw new Error(data.respuesta || "Error desconocido");
             }
 
-            // 5. GUARDAR TODO EN MEMORIA (Texto + Imágenes)
+            // 5. Guardar en memoria
             sessionStorage.setItem('ragData', JSON.stringify(data));
 
-            // 6. Redirigir a la vista de resultados
-            window.location.href = 'search/responses';
+            // 6. Redirigir (USANDO RUTA ABSOLUTA)
+            window.location.href = '<?= base_url("search/responses") ?>';
         })
         .catch(error => {
             console.error('Error:', error);
             statusMsg.innerHTML = `<div class="alert alert-danger w-50 mx-auto">Error: ${error.message}</div>`;
             
-            // Restaurar botón
             btn.disabled = false;
             spinner.classList.add('d-none');
             btn.innerHTML = 'Buscar';

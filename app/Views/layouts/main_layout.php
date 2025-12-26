@@ -22,18 +22,18 @@ $this->section('content');
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link" href="search">Consulta</a>
+                            <a class="nav-link" href="<?= base_url('search') ?>">Consulta</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="responses">Respuestas</a>
+                            <a class="nav-link" href="<?= base_url('search/responses') ?>">Respuestas</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="history">Historial</a>
+                            <a class="nav-link" href="<?= base_url('search/history') ?>">Historial</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="sources">Fuentes</a>
+                            <a class="nav-link" href="<?= base_url('search/sources') ?>">Fuentes</a>
                         </li>
                     </ul>
                 </div>
