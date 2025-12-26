@@ -41,7 +41,7 @@ class Search extends Controller
             ]);
         }
 
-        $n8nUrl = 'https://n8n-production-4fd2.up.railway.app/webhook/rag-consulta';
+        $n8nUrl = 'https://mi-n8n-final-nvg8.onrender.com/webhook/rag-consulta';
 
         try {
             // 2. Conectar a N8N

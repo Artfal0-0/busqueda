@@ -6,7 +6,7 @@ $this->section('content'); ?>
         <div class="col-lg-10 text-center">
             
             <h1 class="display-4 fw-bold text-white mb-3">Sistema RAG Multiagente</h1>
-            <p class="lead text-white-50 mb-5">Búsqueda inteligente con n8n + Imágenes</p>
+            <p class="lead text-white-50 mb-5">Búsqueda inteligente con Imágenes</p>
 
             <form id="searchForm" class="mb-5">
                 <div class="input-group input-group-lg shadow-lg" style="max-width: 800px; margin: 0 auto;">
@@ -43,7 +43,7 @@ $this->section('content'); ?>
         btn.disabled = true;
         spinner.classList.remove('d-none');
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Consultando Agentes...';
-        statusMsg.innerHTML = '<div class="text-info">Conectando con Groq y buscando imágenes...</div>';
+        statusMsg.innerHTML = '<div class="text-info">Buscando imágenes...</div>';
 
         // 3. Preparar datos para el Controlador PHP
         const formData = new FormData();
@@ -66,7 +66,6 @@ $this->section('content'); ?>
             }
 
             // 5. GUARDAR TODO EN MEMORIA (Texto + Imágenes)
-            // Aquí 'data' ya contiene: { respuesta: "...", pregunta: "...", imagenes: [...] }
             sessionStorage.setItem('ragData', JSON.stringify(data));
 
             // 6. Redirigir a la vista de resultados
