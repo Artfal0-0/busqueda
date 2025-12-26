@@ -1,28 +1,67 @@
-<?php
-$this->extend('layouts/main_layout');
-$this->section('content');
-?>
+<?= $this->extend('layouts/main_layout') ?>
 
-<div class="container py-5 min-vh-100">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <br>
-            <h2 class="text-white mb-4 border-bottom pb-2">Resultado de la Investigación</h2>
-            <div id="responseContainer">
-                <div class="text-center text-white-50 mt-5">
-                    <p>Cargando respuesta...</p>
-                    <div class="spinner-border text-info" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
+<?= $this->section('content') ?>
+
+<div class="container mt-5">
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                    <h5 class="text-muted text-uppercase small mb-2">Consulta Realizada:</h5>
+                    <h2 id="questionTitle" class="display-6 fw-bold text-primary">Cargando pregunta...</h2>
                 </div>
             </div>
         </div>
     </div>
+
+    <div id="errorMessage" class="alert alert-danger d-none shadow" role="alert">
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow border-0 h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h4 class="card-title mb-0"><i class="fas fa-robot me-2 text-warning"></i>Respuesta Sintetizada</h4>
+                </div>
+                <div class="card-body">
+                    <div id="markdownOutput" class="markdown-body">
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            <p class="mt-3 text-muted">Procesando respuesta inteligente...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <h5 class="mb-3"><i class="fas fa-images me-2 text-success"></i>Fuentes Visuales</h5>
+            <div id="imageGallery" class="row g-2">
+                <div class="col-12">
+                    <div class="placeholder-glow"><span class="placeholder col-12" style="height: 150px;"></span></div>
+                </div>
+                <div class="col-12">
+                    <div class="placeholder-glow"><span class="placeholder col-12" style="height: 150px;"></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-5 mb-5">
+        <a href="<?= base_url('search') ?>" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="fas fa-arrow-left me-2"></i>Nueva Búsqueda
+        </a>
+    </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Elementos del DOM
+        // Elementos del DOM (Ahora sí existen en el HTML de arriba)
         const outputDiv = document.getElementById('markdownOutput');
         const errorDiv = document.getElementById('errorMessage');
         const questionTitle = document.getElementById('questionTitle');
@@ -32,68 +71,76 @@ $this->section('content');
             // 1. Recuperar datos de la memoria
             const rawData = sessionStorage.getItem('ragData');
 
-            // LOG PARA DEPURAR (Míralo en la consola F12)
-            console.log("📦 Datos crudos recuperados:", rawData);
+            console.log("📦 Datos recuperados:", rawData);
 
             if (!rawData) {
-                throw new Error("No hay datos de búsqueda almacenados. Intenta buscar de nuevo.");
+                throw new Error("No hay datos de búsqueda. Vuelve al inicio.");
             }
 
             const data = JSON.parse(rawData);
-            console.log("✨ Datos procesados (JSON):", data);
 
-            // 2. Renderizar Pregunta
-            // Aceptamos data.pregunta OR data.query OR "Pregunta desconocida"
-            questionTitle.textContent = data.pregunta || data.query || "Resultado de la búsqueda";
+            // 2. Pintar Pregunta
+            if (questionTitle) {
+                questionTitle.textContent = data.pregunta || data.query || "Resultado de la búsqueda";
+            }
 
-            // 3. Renderizar Respuesta (Texto IA) - AQUÍ OCURRÍA EL ERROR
-            // Verificamos si existe data.respuesta y si no es null
+            // 3. Pintar Respuesta (Texto IA)
             let textoIA = data.respuesta;
+            if (!textoIA) textoIA = "⚠️ La IA no devolvió texto, pero la búsqueda terminó.";
 
-            // Si viene vacío o undefined, ponemos un mensaje de fallback
-            if (!textoIA) {
-                console.warn("⚠️ La propiedad 'respuesta' está vacía o no existe.");
-                textoIA = "⚠️ La IA no devolvió texto, pero la búsqueda se completó. Revisa la consola para ver la estructura de los datos.";
+            if (outputDiv) {
+                // Usar marked si está cargado
+                if (typeof marked !== 'undefined') {
+                    outputDiv.innerHTML = marked.parse(textoIA);
+                } else {
+                    outputDiv.textContent = textoIA;
+                }
             }
 
-            // Usamos marked solo si tenemos texto (evita el error 'marked(): input parameter is undefined')
-            if (typeof marked !== 'undefined' && typeof marked.parse === 'function') {
-                outputDiv.innerHTML = marked.parse(textoIA);
-            } else {
-                // Si marked falla por alguna razón, mostramos texto plano
-                outputDiv.textContent = textoIA;
-            }
-
-            // 4. Renderizar Imágenes (Galería)
-            // Aceptamos data.imagenes OR data.images OR array vacío
+            // 4. Pintar Imágenes
             const imagenes = data.imagenes || data.images || [];
 
-            if (Array.isArray(imagenes) && imagenes.length > 0) {
+            if (galleryDiv) {
                 galleryDiv.innerHTML = ''; // Limpiar placeholders
-                imagenes.forEach(imgUrl => {
-                    const col = document.createElement('div');
-                    col.className = 'col-md-4 mb-3';
-                    col.innerHTML = `
-                        <div class="card h-100 shadow-sm">
-                            <img src="${imgUrl}" class="card-img-top" alt="Resultado visual" 
-                                 style="height: 200px; object-fit: cover;"
-                                 onerror="this.src='https://via.placeholder.com/300x200?text=Error+Imagen'">
-                        </div>
-                    `;
-                    galleryDiv.appendChild(col);
-                });
-            } else {
-                galleryDiv.innerHTML = '<p class="text-muted text-center col-12">No se encontraron imágenes relevantes.</p>';
+
+                if (Array.isArray(imagenes) && imagenes.length > 0) {
+                    imagenes.forEach(imgUrl => {
+                        // Limpiamos la URL por si viene con comillas extra o caracteres raros
+                        const cleanUrl = imgUrl.replace(/["\[\]]/g, '');
+
+                        if (cleanUrl.startsWith('http')) {
+                            const col = document.createElement('div');
+                            col.className = 'col-12 mb-3'; // Una imagen por fila en columna derecha
+                            col.innerHTML = `
+                                <div class="card border-0 shadow-sm overflow-hidden">
+                                    <a href="${cleanUrl}" target="_blank">
+                                        <img src="${cleanUrl}" class="card-img-top" alt="Referencia visual" 
+                                             style="height: 200px; object-fit: cover; width: 100%; transition: transform 0.3s;"
+                                             onmouseover="this.style.transform='scale(1.05)'"
+                                             onmouseout="this.style.transform='scale(1)'"
+                                             onerror="this.style.display='none'">
+                                    </a>
+                                </div>
+                            `;
+                            galleryDiv.appendChild(col);
+                        }
+                    });
+                } else {
+                    galleryDiv.innerHTML = '<div class="alert alert-light text-center">Sin imágenes relevantes</div>';
+                }
             }
 
         } catch (error) {
-            console.error("❌ Error grave en responses.php:", error);
-            errorDiv.classList.remove('d-none');
-            // Mostramos el detalle del error en la pantalla para que sea fácil verlo
-            errorDiv.innerHTML = `<strong>Error de visualización:</strong> ${error.message}`;
+            console.error("❌ Error JS:", error);
+            if (errorDiv) {
+                errorDiv.classList.remove('d-none');
+                errorDiv.textContent = error.message;
+            }
         }
     });
 </script>
+
+<?= $this->endSection() ?>
 
 <style>
     /* Estilos para el Markdown */
