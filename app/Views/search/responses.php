@@ -61,16 +61,13 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Elementos del DOM (Ahora sí existen en el HTML de arriba)
         const outputDiv = document.getElementById('markdownOutput');
         const errorDiv = document.getElementById('errorMessage');
         const questionTitle = document.getElementById('questionTitle');
         const galleryDiv = document.getElementById('imageGallery');
 
         try {
-            // 1. Recuperar datos de la memoria
             const rawData = sessionStorage.getItem('ragData');
-
             console.log("📦 Datos recuperados:", rawData);
 
             if (!rawData) {
@@ -79,17 +76,16 @@
 
             const data = JSON.parse(rawData);
 
-            // 2. Pintar Pregunta
+            // 1. Pintar Pregunta
             if (questionTitle) {
                 questionTitle.textContent = data.pregunta || data.query || "Resultado de la búsqueda";
             }
 
-            // 3. Pintar Respuesta (Texto IA)
+            // 2. Pintar Respuesta
             let textoIA = data.respuesta;
             if (!textoIA) textoIA = "⚠️ La IA no devolvió texto, pero la búsqueda terminó.";
 
             if (outputDiv) {
-                // Usar marked si está cargado
                 if (typeof marked !== 'undefined') {
                     outputDiv.innerHTML = marked.parse(textoIA);
                 } else {
@@ -97,27 +93,23 @@
                 }
             }
 
-            // 4. Pintar Imágenes
+            // 3. Pintar Imágenes
             const imagenes = data.imagenes || data.images || [];
 
             if (galleryDiv) {
-                galleryDiv.innerHTML = ''; // Limpiar placeholders
+                galleryDiv.innerHTML = '';
 
                 if (Array.isArray(imagenes) && imagenes.length > 0) {
                     imagenes.forEach(imgUrl => {
-                        // Limpiamos la URL por si viene con comillas extra o caracteres raros
                         const cleanUrl = imgUrl.replace(/["\[\]]/g, '');
-
                         if (cleanUrl.startsWith('http')) {
                             const col = document.createElement('div');
-                            col.className = 'col-12 mb-3'; // Una imagen por fila en columna derecha
+                            col.className = 'col-12 mb-3';
                             col.innerHTML = `
                                 <div class="card border-0 shadow-sm overflow-hidden">
                                     <a href="${cleanUrl}" target="_blank">
-                                        <img src="${cleanUrl}" class="card-img-top" alt="Referencia visual" 
-                                             style="height: 200px; object-fit: cover; width: 100%; transition: transform 0.3s;"
-                                             onmouseover="this.style.transform='scale(1.05)'"
-                                             onmouseout="this.style.transform='scale(1)'"
+                                        <img src="${cleanUrl}" class="card-img-top zoom-img" alt="Referencia visual" 
+                                             style="height: 200px; object-fit: cover; width: 100%;"
                                              onerror="this.style.display='none'">
                                     </a>
                                 </div>
@@ -140,44 +132,41 @@
     });
 </script>
 
-<?= $this->endSection() ?>
-
 <style>
-    /* Estilos para el Markdown */
+    /* Estilos dentro de la sección content para asegurar que carguen */
     .markdown-body ul,
     .markdown-body ol {
         padding-left: 20px;
-        color: #e0e0e0;
+        color: #555;
     }
 
     .markdown-body p {
         margin-bottom: 1rem;
         line-height: 1.7;
+        color: #333;
     }
 
     .markdown-body h1,
     .markdown-body h2,
     .markdown-body h3 {
-        color: #94AEE3;
-        /* Azul claro para títulos */
+        color: #0d6efd;
         margin-top: 1.5rem;
         font-weight: 600;
     }
 
     .markdown-body strong {
-        color: #fff;
+        color: #000;
         font-weight: 700;
     }
 
     .markdown-body code {
-        background-color: #1a1a1a;
+        background-color: #f8f9fa;
         padding: 2px 5px;
         border-radius: 4px;
-        color: #ff7b72;
+        color: #d63384;
         font-family: monospace;
     }
 
-    /* Efecto Zoom en las imágenes */
     .zoom-img {
         transition: transform 0.3s ease;
     }
@@ -188,4 +177,4 @@
     }
 </style>
 
-<?php $this->endSection(); ?>
+<?= $this->endSection() ?>
