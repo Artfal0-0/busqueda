@@ -49,8 +49,6 @@ $this->section('content'); ?>
         const formData = new FormData();
         formData.append('query', query);
 
-        // 4. Enviar petición (USANDO RUTA ABSOLUTA GENERADA POR PHP)
-        // Fíjate en el cambio aquí: <?= base_url(...) ?>
         fetch('<?= base_url("search/process") ?>', {
             method: 'POST',
             body: formData,
