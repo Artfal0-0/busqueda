@@ -16,7 +16,9 @@ class App extends BaseConfig
      *
      * E.g., http://example.com/
      */
-    public string $baseURL = 'http://localhost/busqueda';
+
+    // public string $baseURL = 'http://localhost/busqueda';
+    public string $baseURL = 'https://busqueda-im8l.onrender.com/';
 
     /**
      * Allowed Hostnames in the Site URL other than the hostname in the baseURL.
